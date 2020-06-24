@@ -70,8 +70,8 @@
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-(function webpackMissingModule() { throw new Error("Cannot find module \"/Users/mywork-dragon/Dev/phoenix-pair/phoenix_pair/web/static/css/application.sass\""); }());
-(function webpackMissingModule() { throw new Error("Cannot find module \"/Users/mywork-dragon/Dev/phoenix-pair/phoenix_pair/web/static/js/application.js\""); }());
+(function webpackMissingModule() { throw new Error("Cannot find module \"/Users/SophieDeBenedetto/Dev/phoenix-pair/phoenix_pair/web/static/css/application.sass\""); }());
+(function webpackMissingModule() { throw new Error("Cannot find module \"/Users/SophieDeBenedetto/Dev/phoenix-pair/phoenix_pair/web/static/js/application.js\""); }());
 
 
 /***/ })
