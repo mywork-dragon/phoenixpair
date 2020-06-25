@@ -1,4 +1,4 @@
-defmodule PhoenixPair.SessionController do 
+defmodule PhoenixPair.SessionsController do 
   use PhoenixPair.Web, :controller
 
   alias PhoenixPair.{Repo, User}
@@ -32,7 +32,7 @@ defmodule PhoenixPair.SessionController do
   def unauthenticated(conn, _params) do 
     conn
     |> put_status(:forbidden)
-    |> render(PhoenixPair.SessionView, "forbidden.json", error: "Not Authenticated!")
+    |> render(PhoenixPair.SessionsView, "forbidden.json", error: "Not Authenticated!")
   end
 end
 

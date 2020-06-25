@@ -1,13 +1,11 @@
 import Constants from '../constants';
 
-const initialState = {
-  challenges: [],
-};
+const initialState = []
 
 export default function reducer(state = initialState, action = {}) {
   switch (action.type) {
     case Constants.CHALLENGES_RECEIVED:
-      return { ...state, challenges: action.challenges}
+      return action.challenges
     default:
       return state;
   }
