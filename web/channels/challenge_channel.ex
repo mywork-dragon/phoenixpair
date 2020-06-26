@@ -1,18 +1,56 @@
+require IEx;
 defmodule PhoenixPair.ChallengeChannel do
   use PhoenixPair.Web, :channel
   alias PhoenixPair.{Challenge, User}
+  alias PhoenixPair.ChallengeChannel.Monitor
 
   def join("challenges:" <> challenge_id, _params, socket) do
     challenge = Repo.get(Challenge, challenge_id)
+    user = socket.assigns.current_user
+    participant_ids = Monitor.participant_joined(challenge_id, user.id)
+    send(self, {:after_join, participant_ids})
 
     {:ok, %{challenge: challenge}, assign(socket, :challenge, challenge)}
   end
 
-  def handle_in("user:join", %{user_id: user_id, users: users}, socket) do 
-    challenge = socket.assigns.challenge
-    user = Repo.get(User, id: user_id)
-    users = [users | user]
+  def handle_info({:after_join, participant_ids}, socket) do
+    users = collect_user_json(participant_ids)
     broadcast! socket, "user:joined", %{users: users}
     {:noreply, socket}
+  end
+
+  def handle_in("response:update", %{"response" => response}, socket) do
+    challenge = socket.assigns.challenge
+    |> Ecto.Changeset.change(%{response: response})
+    case Repo.update challenge do
+      {:ok, struct}       ->
+        broadcast! socket, "response:updated", %{challenge: struct}
+        {:noreply, socket}
+      {:error, changeset} ->
+        {:reply, {:error, %{error: "Error updating challenge"}}, socket}
+    end
+  end
+
+  def terminate(_reason, socket) do
+    challenge_id = socket.assigns.challenge.id
+    user_id = socket.assigns.current_user.id
+    users = collect_user_json(Monitor.user_left(challenge_id, user_id))
+    broadcast! socket, "user:left", %{users: users}
+
+    :ok
+  end
+
+  defp collect_user_json(user_ids) do
+    Enum.map(user_ids, &encode_user(&1))
+  end
+
+  defp encode_user(user_id) do
+    user = Repo.get(User, user_id)
+    case Poison.encode(user) do
+      {:ok, user} ->
+        user
+      _ ->
+        :error
+    end
   end
 end
