@@ -17238,9 +17238,11 @@ var Actions = {
         var users = response.users.map(function (user) {
           return JSON.parse(user);
         });
+        var language = response.language;
         dispatch({
           type: _constants2.default.CURRENT_CHALLENGE_PARTICIPANTS,
-          users: users
+          users: users,
+          language: language
         });
       });
 
@@ -33329,9 +33331,11 @@ function reducer() {
     case _constants2.default.SET_CURRENT_CHALLENGE:
       return _extends({}, state, { currentChallenge: action.challenge, channel: action.channel });
     case _constants2.default.CURRENT_CHALLENGE_PARTICIPANTS:
-      return _extends({}, state, { participants: action.users });
+      if (action.language) return _extends({}, state, { participants: action.users, language: action.language });else return _extends({}, state, { participants: action.users });
     case _constants2.default.CURRENT_CHALLENGE_RESPONSE:
       return _extends({}, state, { currentChallenge: action.challenge });
+    case _constants2.default.CURRENT_CHALLENGE_LANGUAGE:
+      return _extends({}, state, { language: action.language });
     default:
       return state;
   }
@@ -33806,7 +33810,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var themes = ['monokai', 'bespin', '3024-day', '3024-night', 'cobalt', 'eclipse', 'dracula', 'isotope', 'duotone', 'icecoder', 'material', 'midnight', 'solarized'];
 
-var languages = ['javascript', 'ruby', 'swift', 'python', 'php', 'erlang'];
+var languages = ['ruby', 'javascript', 'swift', 'python', 'php', 'erlang'];
 
 var ChallengesShow = function (_React$Component) {
   _inherits(ChallengesShow, _React$Component);
@@ -33844,7 +33848,7 @@ var ChallengesShow = function (_React$Component) {
         dispatch(_currentChallenge2.default.removeParticipant(channel));
         dispatch(_currentChallenge2.default.connectToChannel(socket, paramId));
       }
-      this.setState({ challenge: nextProps.currentChallenge.currentChallenge });
+      this.setState({ challenge: nextProps.currentChallenge.currentChallenge, language: nextProps.language });
     }
   }, {
     key: 'componentWillUnmount',
@@ -33949,7 +33953,10 @@ var ChallengesShow = function (_React$Component) {
               ),
               _react2.default.createElement(
                 'select',
-                { className: 'form-control', id: 'select', onChange: this.setLanguage.bind(this) },
+                {
+                  className: 'form-control',
+                  value: this.props.language,
+                  onChange: this.setLanguage.bind(this) },
                 this.languageOptions()
               )
             )
@@ -33984,7 +33991,7 @@ var ChallengesShow = function (_React$Component) {
         ),
         _react2.default.createElement(
           'div',
-          { className: 'col-lg-3' },
+          { className: 'col-lg-3 col-md-3 col-sm-3' },
           this._renderParticipants.call(this)
         )
       );

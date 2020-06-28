@@ -7,15 +7,15 @@ defmodule PhoenixPair.ChallengeChannel do
   def join("challenges:" <> challenge_id, _params, socket) do
     challenge = Repo.get(Challenge, challenge_id)
     user = socket.assigns.current_user
-    %{participants: participant_ids} = Monitor.participant_joined(challenge_id, user.id)
-    send(self, {:after_join, participant_ids})
+    challenge_state = Monitor.participant_joined(challenge_id, user.id)
+    send(self, {:after_join, challenge_state})
 
     {:ok, %{challenge: challenge}, assign(socket, :challenge, challenge)}
   end
 
-  def handle_info({:after_join, participant_ids}, socket) do
-    users = collect_user_json(participant_ids)
-    broadcast! socket, "user:joined", %{users: users}
+  def handle_info({:after_join, challenge_state}, socket) do
+    users = collect_user_json(challenge_state[:participants])
+    broadcast! socket, "user:joined", %{users: users, language: challenge_state[:language]}
     {:noreply, socket}
   end
 
@@ -32,15 +32,17 @@ defmodule PhoenixPair.ChallengeChannel do
   end
 
   def handle_in("language:update", %{"response" => response}, socket) do 
-    IEx.pry
     challenge = socket.assigns.challenge
-    Monitor.language_update(challenge.id, response)
+    %{language: language} = Monitor.language_update(challenge.id, response)
+    broadcast! socket, "language:updated", %{language: language}
+    {:noreply, socket}
   end
 
   def terminate(_reason, socket) do
     challenge_id = socket.assigns.challenge.id
     user_id = socket.assigns.current_user.id
-    users = collect_user_json(Monitor.user_left(challenge_id, user_id))
+    %{participants: participant_ids} = Monitor.participant_left(challenge_id, user_id)
+    users = collect_user_json(participant_ids)
     broadcast! socket, "user:left", %{users: users}
 
     :ok
